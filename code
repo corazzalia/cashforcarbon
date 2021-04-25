@@ -1,0 +1,81 @@
+---
+title: ""
+author: ""
+output:
+  html_document: 
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+      number_section: true
+    theme: readable
+    df_print: paged
+    code_folding: hide
+---
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.fullwidth = TRUE}
+# chargement des packages 
+library(tidyverse)
+library(haven)
+```
+
+
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+#on charge les données
+data <- read_dta("C:/Users/liaco/AppData/Local/Temp/PES_data_public-3.dta")
+```
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# on construit la base nécessaire pour produire le graphique
+data_balance <- data %>%
+  # on sélectionne la variable de traitement et des variables "pre-treatment" qui sont continues
+  select(treatstat_vil, hhold1_sex) %>%
+  # on pivot la base au format long
+  pivot_longer(cols = -c(treatstat_vil), names_to = "variable", values_to = "value")
+```
+
+
+
+```{r, echo = TRUE, warning = FALSE}
+#on prend les données
+data %>%
+  #pour chaque groupe (traitement ou contrôle)
+group_by(treatstat_vil) %>%
+  #on calcule leur moyenne pour les différentes variables selectionnées. 
+summarize_at(vars(hhold1_sex, hhold1_age, hhold1_firew, hhold1_dryinc, hhold1_wetinc, hhead_otherkid, water_prob), ~ mean(., na.rm = TRUE))
+```
+
+
+
+```{r, echo = TRUE, warning = FALSE}
+observed_difference <- mean(data$end_fcover_vil[data$treatstat_vil=='Control'], na.rm = TRUE) - mean(data$end_fcover_vil[data$treatstat_vil=='Treatment'], na.rm = TRUE)
+observed_difference
+```
+```{r, eval = TRUE}
+# on construit le vecteur pour enregistrer les résultats
+simulated_difference <- rep(NA, 1000)
+# on fabrique la boucle
+for (i in 1:1000){
+# on permute le traitement
+data <- data %>%
+  mutate(new_treat = sample(treatstat_vil, replace = FALSE))
+# on store le résultat
+simulated_difference[i] <- mean(data$end_fcover_act[data$new_treat=='Control'], na.rm = TRUE)-mean(data$end_fcover_act[data$new_treat=='Treatment'], na.rm = TRUE)
+}
+```
+
+```{r, eval = FALSE, message=FALSE, warning=FALSE}
+# on construit la table de données
+data_simulations <- tibble(simulated_difference = simulated_difference)
+graphe <- ggplot(data_simulations, aes(x = simulated_difference)) +
+  #on trace la courbe de densité en bleu
+  geom_density(color = "black", fill = "deepskyblue3", alpha = 0.5) +
+  #on trace la moyenne des 1000 distributions aléatoires en noir
+  geom_vline(xintercept = mean(data_simulations$simulated_difference), color = "black") +
+  #on trace la différence observée en rouge
+  geom_vline(xintercept = 18.15 , color = "coral") +
+  theme_minimal()
+
+print(graphe)
+```
