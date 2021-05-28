@@ -144,21 +144,21 @@ summary_table <- data %>%
     ihs_land_area,
     forest_area,
     any_tree_cut,
-    cut_cult,
-    cut_timber,
-    cut_emerg,
-    ihs_tim_price_1yr,
+    cut_for_cultivating,
+    cut_for_timber,
+    cut_for_emergency,
+    ihs_tot_revenue,
     rent,
     disputewith3,
     envprog_bi,
     envprob_9,
-    opi_hurtenv_agr,
+    hurtenv_agree,
     base_fcover_vil,
     perc_forest_vil,
-    fcover_change9111_vil,
+    fcover_change_90_10_vil,
     base_fcover_act,
     perc_forest,
-    fcover_change9111
+    fcover_change_90_10
   ) %>%
   pivot_longer(cols = -c(treat), names_to = "covariate", values_to = "value") %>%
   group_by(treat, covariate) %>%
