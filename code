@@ -1,81 +1,240 @@
 ---
-title: ""
-author: ""
+title: ""Cash for carbon: A randomized trial of payments for ecosystem services to reduce deforestation""
+output: html_document
+author: 'Lia & Anis'
+date: "2021/05/02"
 output:
   html_document: 
-    toc: true
-    toc_float:
+      toc: true
+      toc_float:
       collapsed: false
       smooth_scroll: true
       number_section: true
-    theme: readable
-    df_print: paged
-    code_folding: hide
+     theme: cerulean
+     highlight: breezedark
+     df_print: paged
+     code_folding: hide
 ---
 
-```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.fullwidth = TRUE}
-# chargement des packages 
-library(tidyverse)
-library(haven)
-```
+# I. Introduction
 
+[METTRE ICI VOTRE INTRODUCTION]
 
+# Loading packages and data
 
-```{r, eval = TRUE, message = FALSE, warning =  FALSE}
-#on charge les données
-data <- read_dta("C:/Users/liaco/AppData/Local/Temp/PES_data_public-3.dta")
-```
+We load the packages : 
 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
-# on construit la base nécessaire pour produire le graphique
-data_balance <- data %>%
-  # on sélectionne la variable de traitement et des variables "pre-treatment" qui sont continues
-  select(treatstat_vil, hhold1_sex) %>%
-  # on pivot la base au format long
-  pivot_longer(cols = -c(treatstat_vil), names_to = "variable", values_to = "value")
+install.packages("kableExtra")
+install.packages("cowplot")
 ```
 
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# loading packages
+library(tidyverse) # manipulating and viewing data
+library(haven) # loading data in stata format
+library(knitr) # to create tables
+library(kableExtra) # to make aesthetic tables
+library(AER)
+library(dplyr)
+library(cowplot)
+```
 
+We load the data from the experiment: 
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# opening up of data 
+data <- read_dta("C:/Users/liaco/Downloads/PES_analysis_science.dta") %>%
+  filter(sample_gps == 1) %>%
+  select(-sample_gps)
+```
+
+# II. Presentation of the data and variables you use
+
+We have 1099 observations of 130 variable in the data. 
+In our study, we will use the following variables:
+
+- hhead_age: gives the age of the head of the household 
+- hhead_educ: gives the number of years of education of the head of the household
+- ihs_land_area: gives the self-reported area of land held by the head of the household
+- forest_area: gives the self-reported area of forest owned by the head of the household  
+- any_tree_cut: shows whether the PFO has cut any trees in the last 3 years
+- cut_cult: shows whether any trees were cut for the purpose of cultivating the land 
+- cut_timber: shows whether trees have been cut for the purpose of producing timber products 
+- cut_emerg: shows whether trees have been cut for the purpose of dealing with emergencies such as large lumpy expenses. 
+- ihs_tim_price_1yr: IHS of total revenue from cut trees
+- rent: shows if the PFO rented part of his land
+- disputewith3 : shows if the PFO has ever had disputes with neighbours about the land
+- envprog_bi: shows if the owner is already involved in any environmental program
+- envprob_9: shows if the PFO agrees that deforestation affects the community 
+- opi_hurtenv_agr: shows if the OFP agrees that it is necessary to damage the environment to improve living conditions 
+- fcover_change9111_vil: percentage change in vegetation in the village between 1990 and 2010 
+- fcover_change9111: percentage change in vegetation in the PFO land circle between 1990 and 2010 
+- base_fcover_act: 
+- perc_forest : 
+- base_fcover_vil :
+- perc_forest_vil: 
+
+Concerning the outcomes, we are interested in the following one : change_fcover_vil which shows the change in the forest area in the village between the beginning and the end of the programme. 
+
+As regards treatment, we are dealing with one-sided non-compliance. We have the variable "treat" which gives us which villages were allocated to the treatment. There is also the variable Ftakeup which tells us which PFOs actually attended the programme. 
+
+
+# III. Data cleaning 
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+data <- data %>%
+  mutate(
+    # recoding of the treat variable
+    treat = case_when(treat == 1 ~ "Treatment",treat == 0 ~ "Control")
+    )
+```
+
+IV. Explanation of the treatment allocation process
+
+The study was conducted in 121 villages with private forest owners (PFOs).  60 of these villages were randomly selected to be part of the treatment group. In the villages allocated to the treatment group, the PES programme was marketed to PFOs, who could enrol if they wished. Only 32% of the PFOs in the treatment group villages agreed to participate in the programme. Indeed, 180 PFOs enrolled out of the 564 who were in villages allocated to the treatment group
+
+V. Highlighting the "balance" of the treatment
+
+We try to see if the control and treatment groups are similar 
+
+Let's see if the number of PFOs in the control group is close to the number of PFOs in the treatment group
+```{r, echo = TRUE, warning = FALSE}
+# on prend les données : 
+data %>%
+  # et pour chaque groupe (traitement ou contrôle)
+  group_by(treat) %>%
+# on compte le nombre de participants qui correspond à la nouvelle variable nombre_obs :
+summarise(nombre_obs = n())
+```
+There are more PFOs in the treatment group and the difference is quite large (29). Indeed, although there are almost the same number of villages in each group, there are not the same number of PFOs in each village. This difference is therefore quite normal. 
 
 ```{r, echo = TRUE, warning = FALSE}
 #on prend les données
 data %>%
   #pour chaque groupe (traitement ou contrôle)
-group_by(treatstat_vil) %>%
+group_by(treat) %>%
   #on calcule leur moyenne pour les différentes variables selectionnées. 
-summarize_at(vars(hhold1_sex, hhold1_age, hhold1_firew, hhold1_dryinc, hhold1_wetinc, hhead_otherkid, water_prob), ~ mean(., na.rm = TRUE))
+summarize_at(vars(hhead_age,
+    hhead_educ,
+    ihs_land_area,
+    forest_area,
+    any_tree_cut,
+    cut_cult,
+    cut_timber,
+    cut_emerg,
+    ihs_tim_price_1yr,
+    rent,
+    disputewith3,
+    envprog_bi,
+    envprob_9,
+    opi_hurtenv_agr,), ~ mean(., na.rm = TRUE))
 ```
-
-
+From the table, the two groups seem to have similar characteristics. Let's try to see more clearly with the help of box plots. 
 
 ```{r, echo = TRUE, warning = FALSE}
-observed_difference <- mean(data$end_fcover_vil[data$treatstat_vil=='Control'], na.rm = TRUE) - mean(data$end_fcover_vil[data$treatstat_vil=='Treatment'], na.rm = TRUE)
+#Boxplot for age 
+ageplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
+  geom_boxplot(aes(x = as.character(treat), y = hhead_age , color = as.character(treat))) +
+  xlab('treat') +
+  labs(title = 'Age boxplot') +
+  theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
+ageplot
+#Boxplot for years of education
+educationplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
+  geom_boxplot(aes(x = as.character(treat), y = hhead_educ , color = as.character(treat))) +
+  xlab('treat') +
+  labs(title = 'Years of Education boxplot') +
+  theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
+educationplot
+#Boxplot for Forest area
+forestareaplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
+  geom_boxplot(aes(x = as.character(treat), y = forest_area , color = as.character(treat))) +
+  xlab('treat') +
+  labs(title = 'Forest area boxplot') +
+  theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
+forestareaplot
+
+forestareaplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
+  geom_boxplot(aes(x = as.character(treat), y = forest_area , color = as.character(treat))) +
+  xlab('treat') +
+  labs(title = 'Forest area boxplot') +
+  theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
+forestareaplot
+
+plot_grid(ageplot, educationplot, forestareaplot) #put the graphics side by side 
+```
+With the boxes, we can see that the two groups are similar. Indeed, their medians and quartiles are similar. 
+```{r, echo = TRUE, warning = FALSE}
+
+educationdistribution <- ggplot(data = data) + # plot showing the age distribution according to the treatement
+  geom_density(aes(x = hhead_educ, color = treat)) +
+  labs(title = 'Years of Education distribution') +
+  theme(plot.title = element_text(hjust = 0.5))
+educationdistribution
+
+agedistribution <- ggplot(data = data) + # plot showing the age distribution according to the treatement
+  geom_density(aes(x = hhead_age, color = treat)) +
+  labs(title = 'Age distribution') +
+  theme(plot.title = element_text(hjust = 0.5))
+agedistribution
+
+plot_grid(educationdistribution, agedistribution) 
+
+```
+
+The curves look the same, the two groups are very similar. It is difficult to read the other variables which are indicator variables, the curves are quite unreadable. 
+
+VI. Randomization Inference
+
+Our sharp null hypothesis states that the programme did not increase the area of forest.
+
+To test this sharp null hypothesis, we take as a test statistic the difference in the average vegetation change between the treatment and control groups : 
+
+```{r, echo = TRUE, warning = FALSE}
+#calculation of the difference and recording in the object "observed_difference"
+observed_difference <- mean(data$change_fcover_vil[data$treat == 0], na.rm = TRUE) - mean(data$change_fcover_vil[data$treat == 1], na.rm = TRUE)
 observed_difference
 ```
+The observed difference is negative. Thus the change in forest area is greater for the treatment group than for the control group on average. 
+
+We then create the distribution of this test statistic under the sharp null hypothesis by running simulations. 
 ```{r, eval = TRUE}
-# on construit le vecteur pour enregistrer les résultats
+# we build the vector to record the results
 simulated_difference <- rep(NA, 1000)
-# on fabrique la boucle
+# we make the loop
 for (i in 1:1000){
-# on permute le traitement
+# we switch the treatment
 data <- data %>%
-  mutate(new_treat = sample(treatstat_vil, replace = FALSE))
-# on store le résultat
-simulated_difference[i] <- mean(data$end_fcover_act[data$new_treat=='Control'], na.rm = TRUE)-mean(data$end_fcover_act[data$new_treat=='Treatment'], na.rm = TRUE)
+  mutate(new_treat = sample(treat, replace = FALSE))
+# we store the result
+simulated_difference[i] <- mean(data$change_fcover_vil[data$new_treat== 0], na.rm = TRUE)-mean(data$change_fcover_vil[data$new_treat== 1], na.rm = TRUE)
 }
 ```
 
+Once the simulations are done, we plot the distribution of the test statistic under the sharp null hypothesis and add the mean of the simulations and the observed effect. 
 ```{r, eval = FALSE, message=FALSE, warning=FALSE}
-# on construit la table de données
+# we build the data table
 data_simulations <- tibble(simulated_difference = simulated_difference)
 graphe <- ggplot(data_simulations, aes(x = simulated_difference)) +
-  #on trace la courbe de densité en bleu
+  # we plot the density curve in blue
   geom_density(color = "black", fill = "deepskyblue3", alpha = 0.5) +
-  #on trace la moyenne des 1000 distributions aléatoires en noir
+  #we plot the average of the 1000 random distributions in black
   geom_vline(xintercept = mean(data_simulations$simulated_difference), color = "black") +
-  #on trace la différence observée en rouge
-  geom_vline(xintercept = 18.15 , color = "coral") +
+  #we plot the observed difference in red
+  geom_vline(xintercept = -5.1559 , color = "coral") +
   theme_minimal()
 
 print(graphe)
 ```
+The sharp null hypothesis can be rejected visually. Indeed, the observed effect is far from the test statistic result under the null hypothesis.
+
+```{r, eval = TRUE}
+# calculation of the one-sided p-value
+(sum(simulated_difference <= observed_difference)/1000)*100
+
+# calculation of the two-sided p-value
+(sum(abs(simulated_difference) <= observed_difference)/1000)*100
+```
+The one-sided and two-sided p-values confirm that the sharp null hypothesis can be rejected. Indeed, here the probability of making an error by rejecting the sharp null hypothesis is zero. It can be concluded that the programme does have an effect on participants' income.
+We can conclude, by the randomization inference that the programme does have a positive effect. It increases the area of forest in the villages. 
