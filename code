@@ -28,7 +28,12 @@ text-align: justify}
 
 # I. Introduction
 
-[METTRE ICI VOTRE INTRODUCTION]
+Deforestation is responsible for the equivalent of 11.3% of global CO2 emissions, making it one of the biggest contributors to global warming. Indeed, when a tree is cut down, it stops absorbing CO2 and, by decomposing or burning, its carbon stock is released into the atmosphere. 
+Fighting against this phenomenon can then turn out to be particularly profitable insofar as it allows both to significantly reduce global warming, while protecting from serious consequences on the ecosystems then attacked. 
+Deforestation is most widespread in developing countries. The wood is exported or used as fuel, while the deforested land is used for agricultural crops. That's why Seema Jayachandran, an economist at Northwestern University, conducted the Cash for Carbon experiment between 2011 and 2013 with the help of Joost de Laat, a poverty specialist at the Dutch NGO Porticus. 
+This randomized controlled trial conducted in Uganda, then one of the countries with the highest deforestation rate in the world, aimed to finance some Ugandan forest owners in exchange for the conservation of their trees. After two years, all they had to do was to assess the difference in tree cover between the control and treatment groups and measure the gain from this conservation through the social cost of carbon, an indicator of the monetary value of carbon. 
+In 2013, at the end of the experiment, the researchers found that the tree cover of the control group had decreased by 9.1%, twice as much as the treatment group. The benefits of the experiment were thus 2.4 times higher than its cost, which made this operation a real success in the fight against global warming.
+The objective of our approach will be to replicate this experiment with the help of the data provided by the researchers and to evaluate the consistency of our results with theirs.
 
 # Loading packages and data
 
@@ -80,10 +85,10 @@ In our study, we will use the following variables:
 - opi_hurtenv_agr: shows if the OFP agrees that it is necessary to damage the environment to improve living conditions 
 - fcover_change9111_vil: percentage change in vegetation in the village between 1990 and 2010 
 - fcover_change9111: percentage change in vegetation in the PFO land circle between 1990 and 2010 
-- base_fcover_act: 
-- perc_forest : 
-- base_fcover_vil :
-- perc_forest_vil: 
+- base_fcover_act: gives the tree cover of the PFO land circle
+- perc_forest : gives the percentage of PFO land circle with tree cover
+- base_fcover_vil : gives the tree cover of the villages
+- perc_forest_vil: gives the percentage of village with tree cover
 
 Concerning the outcomes, we are interested in the following one : change_fcover_vil which shows the change in the forest area in the village between the beginning and the end of the programme. 
 
@@ -98,6 +103,13 @@ data <- data %>%
     # recoding of the treat variable
     treat = case_when(treat == 1 ~ "Treatment",treat == 0 ~ "Control")
     )
+```
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+library(dplyr, quietly = TRUE)
+  data <- data %>% rename(cut_for_cultivating = cut_cult, cut_for_timber = cut_timber, cut_for_emergency = cut_emerg, 
+  ihs_tot_revenue = ihs_tim_price_1yr, hurtenv_agree = opi_hurtenv_agr, fcover_change_90_10_vil = fcover_change9111_vil, 
+  fcover_change_90_10 = fcover_change9111)
+                
 ```
 
 IV. Explanation of the treatment allocation process
@@ -130,15 +142,15 @@ summarize_at(vars(hhead_age,
     ihs_land_area,
     forest_area,
     any_tree_cut,
-    cut_cult,
-    cut_timber,
-    cut_emerg,
-    ihs_tim_price_1yr,
+    cut_for_cultivating,
+    cut_for_timber,
+    cut_for_emergency,
+    ihs_tot_revenue,
     rent,
     disputewith3,
     envprog_bi,
     envprob_9,
-    opi_hurtenv_agr,), ~ mean(., na.rm = TRUE))
+    hurtenv_agree,), ~ mean(., na.rm = TRUE))
 ```
 From the table, the two groups seem to have similar characteristics. Let's try to see more clearly with the help of box plots. 
 
