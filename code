@@ -301,4 +301,138 @@ upper_bound
 ```
 We are 95% confident that the effect of the programme would be between these two values. The confidence interval is wide (width = 97,488) and there is a negative and a positive bound. The uncertainty around the treatment effect does not mean that the programme necessarily has a positive effect on forests.We are 95% sure that the effect of the programme can be negative or positive. 
 
+# VIII. Linear regression approach
 
+##Calculation of ITTd
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+lm(Ftakeup ~ treat, data = data)
+   
+```
+So ITTd = 0.3098. The effect of village allocation to treatment on programme participation is around 0,31. This means that there are about 31% of compliers (those in villages allocated to the treatment group who participate in the programme).
+
+## Calculation of ITT
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+lm(change_fcover_vil ~ treat, data = data)
+```
+Si ITT = 5.156. The effect of allocating villages to the treatment group (regardless of whether PFOs participate in the programme or not) is around 5.16. Allocation to treatment increased the area of forest in the village by 5 percentage points.
+
+## Calculation of CACE 
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+ivreg(change_fcover_vil ~ Ftakeup | treat, data = data)
+```
+So CACE = 16.64. The causal effect for the compliers on the area of forest in the village is around 16.64. 
+
+## Reproduction of table 2 
+
+Now we will reproduce "table 2 : Program enrollment, compliance, and payments" of the researchers' paper by linear regressions. 
+All columns include the village-level effects of the four variables to balance the randomisation: the number of PFOs in the base sample, the average weekly wage per capita, the distance to the nearest main road and the average size of the declared plot closest to the dwelling. 
+
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+#we put our treatment variable back as an indicator to facilitate the linear regressions 
+data <- data %>%
+  mutate(treat = ifelse(treat == 'Treatment', 1, 0))
+```
+
+
+###First column
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# Ftakeup (programme participation) is regressed on the treatment allocation taking into account the control variables
+lm(Ftakeup ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "treat") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate_at(vars(estimate:conf.high), ~ round(., 2)) %>%
+  rename("Term" = term, "Estimate" = estimate, "Lower Bound 95% CI" = conf.low, "Upper Bound 95% CI" = conf.high) %>%
+
+  kable(., align = c("l", "c", "c", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+
+```
+
+Here we find approximately the ITTd already calculated. 
+
+###Second column 
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# Conserved (enrolled and deemed to have conserve forest ) is regressed on the treatment allocation taking into account the control variables
+lm(conserved ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "treat") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate_at(vars(estimate:conf.high), ~ round(., 2)) %>%
+  rename("Term" = term, "Estimate" = estimate, "Lower Bound 95% CI" = conf.low, "Upper Bound 95% CI" = conf.high) %>%
+
+  kable(., align = c("l", "c", "c", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+The treatment therefore had a positive effect (O.28) on the forests as it did encourage the PFOs to conserve their forests. The number of PFOs enrolled and deemd to have conserve forest has increased. 
+
+###Third column 
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# Pay_cons (amount paid for avoided deforestation) is regressed on the treatment allocation taking into account the control variables
+lm(pay_cons ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "treat") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate_at(vars(estimate:conf.high), ~ round(., 2)) %>%
+  rename("Term" = term, "Estimate" = estimate, "Lower Bound 95% CI" = conf.low, "Upper Bound 95% CI" = conf.high) %>%
+
+  kable(., align = c("l", "c", "c", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+### 4th column 
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# Fperc_paid (proportion of eligible amount paid) is regressed on the treatment allocation taking into account the control variables
+lm(Fperc_paid ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "treat") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate_at(vars(estimate:conf.high), ~ round(., 2)) %>%
+  rename("Term" = term, "Estimate" = estimate, "Lower Bound 95% CI" = conf.low, "Upper Bound 95% CI" = conf.high) %>%
+
+  kable(., align = c("l", "c", "c", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+## Reproduction of table 3 
+
+We will now reproduce the first two columns of "table 3 : Effect of the PES program on tree cover". We include the same covariates as in Table 2. 
+
+###First column
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+data %>%
+  select(village, treat, change_fcover_vil, num_PFOs_vil,
+         inc_pc_vil,dist_road_vil, l1_area_vil) %>%
+  group_by(village, treat) %>%
+  summarise_all(~ mean(., na.rm = TRUE)) %>%
+  # change_fcover_vil (change in forest area with the programme) is regressed on the treatment allocation taking into account the control variables
+  lm(change_fcover_vil ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = .) %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "treat") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate_at(vars(estimate:conf.high), ~ round(., 2)) %>%
+  rename("Term" = term, "Estimate" = estimate, "Lower Bound 95% CI" = conf.low, "Upper Bound 95% CI" = conf.high) %>%
+  kable(., align = c("l", "c", "c", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+Here we have approximately the ITT already calculated.The control variables added to this table change the result a little. It is therefore the same interpretation as for the ITT
+
+### Second column 
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+data %>%
+  select(village, treat, change_fcover_vil, num_PFOs_vil,
+         inc_pc_vil,dist_road_vil, l1_area_vil, photo1991_vil, photo2011_vil) %>%
+  group_by(village, treat) %>%
+  summarise_all(~ mean(., na.rm = TRUE)) %>%
+  lm(change_fcover_vil ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil + photo1991_vil + photo2011_vil, data = .) %>%
+  broom::tidy(., conf.int = TRUE) %>%
+  filter(term == "treat") %>%
+  select(term, estimate, conf.low, conf.high) %>%
+  mutate_at(vars(estimate:conf.high), ~ round(., 2)) %>%
+  rename("Term" = term, "Estimate" = estimate, "Lower Bound 95% CI" = conf.low, "Upper Bound 95% CI" = conf.high) %>%
+  kable(., align = c("l", "c", "c", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
+```
+The added control variable lowers the effect of the treatment allowance somewhat. 
