@@ -1,4 +1,3 @@
----
 title: ""Cash for carbon: A randomized trial of payments for ecosystem services to reduce deforestation""
 output: html_document
 author: 'Lia & Anis'
@@ -323,7 +322,7 @@ So ITTd = 0.3098. The effect of village allocation to treatment on programme par
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
 lm(change_fcover_vil ~ treat, data = data)
 ```
-Si ITT = 5.156. The effect of allocating villages to the treatment group (regardless of whether PFOs participate in the programme or not) is around 5.16. Allocation to treatment increased the area of forest in the village by 5 percentage points.
+ITT = 5.156. The effect of allocating villages to the treatment group (regardless of whether PFOs participate in the programme or not) is around 5.16. Allocation to treatment increased the area of forest in the village by 5 hectares.
 
 ## Calculation of CACE 
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
