@@ -14,7 +14,17 @@ output:
      highlight: breezedark
      df_print: paged
      code_folding: hide
+     pdf_document: default
 ---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<style>
+body {
+text-align: justify}
+</style>
 
 # I. Introduction
 
