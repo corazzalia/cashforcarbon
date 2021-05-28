@@ -114,13 +114,15 @@ library(dplyr, quietly = TRUE)
                 
 ```
 
-IV. Explanation of the treatment allocation process
+# IV. Explanation of the treatment allocation process
 
 The study was conducted in 121 villages with private forest owners (PFOs).  60 of these villages were randomly selected to be part of the treatment group. In the villages allocated to the treatment group, the PES programme was marketed to PFOs, who could enrol if they wished. Only 32% of the PFOs in the treatment group villages agreed to participate in the programme. Indeed, 180 PFOs enrolled out of the 564 who were in villages allocated to the treatment group
 
-V. Highlighting the "balance" of the treatment
+# V. Highlighting the "balance" of the treatment
 
 We try to see if the control and treatment groups are similar 
+
+## Number of PFOs in each group 
 
 Let's see if the number of PFOs in the control group is close to the number of PFOs in the treatment group
 ```{r, echo = TRUE, warning = FALSE}
@@ -132,6 +134,8 @@ data %>%
 summarise(nombre_obs = n())
 ```
 There are more PFOs in the treatment group and the difference is quite large (29). Indeed, although there are almost the same number of villages in each group, there are not the same number of PFOs in each village. This difference is therefore quite normal.
+
+## Table : summary statistics for each group
 
 To observe the characteristics of the treatment and control groups, one can reproduce "Table 1 : Summary statistics for treatment and control groups" from the researchers' paper : 
 
@@ -174,6 +178,8 @@ summary_table %>%
 ```
 From the table, the two groups seem to have similar characteristics. However, there are small differences in the forest areas at the beginning of the treatment. In fact, the forest areas vary greatly from one OFP to another. Some can have very large areas of forest which can easily change the average of a group. For example, there are small differences in forest area at the beginning of the treatment (22.53ha difference between the two groups for forest area in the village). In fact, the forest areas are very variable from one PFO to another. Some can have very large areas of forest which can easily change the average of a group. 
 
+## Boxplot
+
 Let's try to see more clearly with the help of box plots for some variables. 
 
 ```{r, echo = TRUE, warning = FALSE}
@@ -209,6 +215,8 @@ basetreecoverplot
 plot_grid(ageplot, educationplot, forestareaplot, basetreecoverplot) #put the graphics side by side 
 ```
 With the boxes, we can see that the two groups are quite similar. Indeed, the medians and quartiles are similar for the age, the years of education. For the area of basic forest in the villages, the outliers for the control group are clearly visible, pulling the group average upwards.  
+
+## Distribution 
 
 ```{r, echo = TRUE, warning = FALSE}
 
@@ -273,10 +281,10 @@ The sharp null hypothesis can be rejected visually. Indeed, the observed effect 
 
 ```{r, eval = TRUE}
 # calculation of the one-sided p-value
-(sum(simulated_difference >= observed_difference)/1000)*100
+(sum(simulated_difference <= observed_difference)/1000)*100
 
 # calculation of the two-sided p-value
-(sum(abs(simulated_difference) >= observed_difference)/1000)*100
+(sum(abs(simulated_difference) <= observed_difference)/1000)*100
 ```
 The one-sided and two-sided p-values confirm that the sharp null hypothesis can be rejected. Indeed, here the probability of making an error by rejecting the sharp null hypothesis is zero. 
 It can be concluded that the programme does have an effect on participants' income.
@@ -336,7 +344,7 @@ data <- data %>%
 ```
 
 
-###First column
+### First column
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 # Ftakeup (programme participation) is regressed on the treatment allocation taking into account the control variables
 lm(Ftakeup ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
@@ -353,7 +361,7 @@ lm(Ftakeup ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, da
 
 Here we find approximately the ITTd already calculated. 
 
-###Second column 
+### Second column 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 # Conserved (enrolled and deemed to have conserve forest ) is regressed on the treatment allocation taking into account the control variables
 lm(conserved ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
@@ -368,7 +376,7 @@ lm(conserved ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, 
 ```
 The treatment therefore had a positive effect (O.28) on the forests as it did encourage the PFOs to conserve their forests. The number of PFOs enrolled and deemd to have conserve forest has increased. 
 
-###Third column 
+### Third column 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 # Pay_cons (amount paid for avoided deforestation) is regressed on the treatment allocation taking into account the control variables
 lm(pay_cons ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, data = data) %>%
@@ -398,7 +406,7 @@ lm(Fperc_paid ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil,
 
 We will now reproduce the first two columns of "table 3 : Effect of the PES program on tree cover". We include the same covariates as in Table 2. 
 
-###First column
+### First column
 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 data %>%
