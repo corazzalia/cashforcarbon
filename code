@@ -71,7 +71,7 @@ In our study, we will use the following variables:
 - any_tree_cut: shows whether the PFO has cut any trees in the last 3 years
 - cut_cult: shows whether any trees were cut for the purpose of cultivating the land 
 - cut_timber: shows whether trees have been cut for the purpose of producing timber products 
-- cut_emerg: shows whether trees have been cut for the purpose of dealing with emergencies such as large lumpy expenses. 
+- cut_emerg: shows whether trees have been cut for the purpose of dealing with emergencies such as hospital charges, or major expenses, such as school fees. 
 - ihs_tim_price_1yr: IHS of total revenue from cut trees
 - rent: shows if the PFO rented part of his land
 - disputewith3 : shows if the PFO has ever had disputes with neighbours about the land
