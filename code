@@ -277,8 +277,8 @@ The sharp null hypothesis can be rejected visually. Indeed, the observed effect 
 # calculation of the two-sided p-value
 (sum(abs(simulated_difference) >= observed_difference)/1000)*100
 ```
-The one-sided and two-sided p-values confirm that the sharp null hypothesis can be rejected. Indeed, here the probability of making an error by rejecting the sharp null hypothesis is zero. It can be concluded that the programme does have an effect on participants' income.
-We can conclude, by the randomization inference that the programme does have a positive effect. It increases the area of forest in the villages. 
+The one-sided and two-sided p-values confirm that the sharp null hypothesis can be rejected. Indeed, here the probability of making an error by rejecting the sharp null hypothesis is zero. 
+It can be concluded that the programme does have an effect on participants' income.
 
 # VII. Neyman approach
 
