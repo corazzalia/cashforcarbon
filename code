@@ -129,30 +129,51 @@ data %>%
 # on compte le nombre de participants qui correspond à la nouvelle variable nombre_obs :
 summarise(nombre_obs = n())
 ```
-There are more PFOs in the treatment group and the difference is quite large (29). Indeed, although there are almost the same number of villages in each group, there are not the same number of PFOs in each village. This difference is therefore quite normal. 
+There are more PFOs in the treatment group and the difference is quite large (29). Indeed, although there are almost the same number of villages in each group, there are not the same number of PFOs in each village. This difference is therefore quite normal.
 
-```{r, echo = TRUE, warning = FALSE}
-#on prend les données
-data %>%
-  #pour chaque groupe (traitement ou contrôle)
-group_by(treat) %>%
-  #on calcule leur moyenne pour les différentes variables selectionnées. 
-summarize_at(vars(hhead_age,
+To observe the characteristics of the treatment and control groups, one can reproduce "Table 1 : Summary statistics for treatment and control groups" from the researchers' paper : 
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# création de table
+summary_table <- data %>%
+  mutate(treat = ifelse(treat == 1, "Treated", "Control")) %>%
+  select(
+    treat,
+    hhead_age,
     hhead_educ,
     ihs_land_area,
     forest_area,
     any_tree_cut,
-    cut_for_cultivating,
-    cut_for_timber,
-    cut_for_emergency,
-    ihs_tot_revenue,
+    cut_cult,
+    cut_timber,
+    cut_emerg,
+    ihs_tim_price_1yr,
     rent,
     disputewith3,
     envprog_bi,
     envprob_9,
-    hurtenv_agree,), ~ mean(., na.rm = TRUE))
+    opi_hurtenv_agr,
+    base_fcover_vil,
+    perc_forest_vil,
+    fcover_change9111_vil,
+    base_fcover_act,
+    perc_forest,
+    fcover_change9111
+  ) %>%
+  pivot_longer(cols = -c(treat), names_to = "covariate", values_to = "value") %>%
+  group_by(treat, covariate) %>%
+  summarise(mean = round(mean(value, na.rm = TRUE), 2)) %>%
+  pivot_wider(names_from = treat, values_from = mean)
+
+# affichage de la table
+summary_table %>%
+  rename(Covariate = covariate) %>%
+  kable(., align = c("l", "c", "c")) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"))
 ```
-From the table, the two groups seem to have similar characteristics. Let's try to see more clearly with the help of box plots. 
+From the table, the two groups seem to have similar characteristics. However, there are small differences in the forest areas at the beginning of the treatment. In fact, the forest areas vary greatly from one OFP to another. Some can have very large areas of forest which can easily change the average of a group. For example, there are small differences in forest area at the beginning of the treatment (22.53ha difference between the two groups for forest area in the village). In fact, the forest areas are very variable from one PFO to another. Some can have very large areas of forest which can easily change the average of a group. 
+
+Let's try to see more clearly with the help of box plots for some variables. 
 
 ```{r, echo = TRUE, warning = FALSE}
 #Boxplot for age 
@@ -176,17 +197,18 @@ forestareaplot <- ggplot(data = data) + # boxplot showing the age distribution a
   labs(title = 'Forest area boxplot') +
   theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
 forestareaplot
-
-forestareaplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
-  geom_boxplot(aes(x = as.character(treat), y = forest_area , color = as.character(treat))) +
+#Boxplot for Base Tree cover in village
+basetreecoverplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
+  geom_boxplot(aes(x = as.character(treat), y = base_fcover_vil , color = as.character(treat))) +
   xlab('treat') +
-  labs(title = 'Forest area boxplot') +
+  labs(title = 'Base Tree cover in village boxplot') +
   theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
-forestareaplot
+basetreecoverplot
 
-plot_grid(ageplot, educationplot, forestareaplot) #put the graphics side by side 
+plot_grid(ageplot, educationplot, forestareaplot, basetreecoverplot) #put the graphics side by side 
 ```
-With the boxes, we can see that the two groups are similar. Indeed, their medians and quartiles are similar. 
+With the boxes, we can see that the two groups are quite similar. Indeed, the medians and quartiles are similar for the age, the years of education. For the area of basic forest in the villages, the outliers for the control group are clearly visible, pulling the group average upwards.  
+
 ```{r, echo = TRUE, warning = FALSE}
 
 educationdistribution <- ggplot(data = data) + # plot showing the age distribution according to the treatement
@@ -194,7 +216,6 @@ educationdistribution <- ggplot(data = data) + # plot showing the age distributi
   labs(title = 'Years of Education distribution') +
   theme(plot.title = element_text(hjust = 0.5))
 educationdistribution
-
 agedistribution <- ggplot(data = data) + # plot showing the age distribution according to the treatement
   geom_density(aes(x = hhead_age, color = treat)) +
   labs(title = 'Age distribution') +
@@ -202,12 +223,10 @@ agedistribution <- ggplot(data = data) + # plot showing the age distribution acc
 agedistribution
 
 plot_grid(educationdistribution, agedistribution) 
-
 ```
+The curves look the same, the two groups are very similar. It is difficult to read the other variables which are indicator variables, the curves are quite unreadable.
 
-The curves look the same, the two groups are very similar. It is difficult to read the other variables which are indicator variables, the curves are quite unreadable. 
-
-VI. Randomization Inference
+# VI. Randomization Inference
 
 Our sharp null hypothesis states that the programme did not increase the area of forest.
 
@@ -280,6 +299,6 @@ upper_bound <- observed_difference + 1.96*se
 lower_bound
 upper_bound
 ```
-
 We are 95% confident that the effect of the programme would be between these two values. The confidence interval is wide (width = 97,488) and there is a negative and a positive bound. The uncertainty around the treatment effect does not mean that the programme necessarily has a positive effect on forests.We are 95% sure that the effect of the programme can be negative or positive. 
+
 
