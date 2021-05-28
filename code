@@ -248,3 +248,26 @@ The sharp null hypothesis can be rejected visually. Indeed, the observed effect 
 ```
 The one-sided and two-sided p-values confirm that the sharp null hypothesis can be rejected. Indeed, here the probability of making an error by rejecting the sharp null hypothesis is zero. It can be concluded that the programme does have an effect on participants' income.
 We can conclude, by the randomization inference that the programme does have a positive effect. It increases the area of forest in the villages. 
+
+# VII. Neyman approach
+
+Let's calculate the 95% confidence interval using the Neyman formula. 
+
+```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+#calculation of the first term
+first_term <- var(data$change_fcover_vil[data$treat== 0], na.rm = TRUE)
+#calculation of the second term
+second_term <- var(data$change_fcover_vil[data$treat== 1], na.rm = TRUE)
+#calculation of the standard error
+se <- sqrt(first_term + second_term)
+#calculation of the 95% confidence interval
+#calculation of the lower bound
+lower_bound <- observed_difference - 1.96*se
+#calculation of the upper bound 
+upper_bound <- observed_difference + 1.96*se
+lower_bound
+upper_bound
+```
+
+We are 95% confident that the effect of the programme would be between these two values. The confidence interval is wide (width = 97,488) and there is a negative and a positive bound. The uncertainty around the treatment effect does not mean that the programme necessarily has a positive effect on forests.We are 95% sure that the effect of the programme can be negative or positive. 
+
