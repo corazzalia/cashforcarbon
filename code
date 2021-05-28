@@ -436,3 +436,14 @@ data %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 The added control variable lowers the effect of the treatment allowance somewhat. 
+
+# IX. Robustness and heterogeneity analyses
+
+## Robustness 
+
+Here we will look at whether the outcomes change much if we add control variables 
+
+Let us look at the change in the effect of treatment allocation on outcome when adding control variables to the linear regression. 
+We have seen that the ITT gives 5.156. This is the linear regression of the outcome on the treatment allocation. In column 1 of table 3, we have the same regression with the addition of 4 control variables. This regression gives us an effect of 5.54. So the difference between the two is small (0.38). However, when we add two more variables in column 2 of table 3, we have a quite big difference with the ITT: 0.67. 
+
+
