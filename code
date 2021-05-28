@@ -1,20 +1,20 @@
-title: ""Cash for carbon: A randomized trial of payments for ecosystem services to reduce deforestation""
-output: html_document
-author: 'Lia & Anis'
-date: "2021/05/02"
-output:
-  html_document: 
-      toc: true
-      toc_float:
-      collapsed: false
-      smooth_scroll: true
-      number_section: true
-     theme: cerulean
-     highlight: breezedark
-     df_print: paged
-     code_folding: hide
-     pdf_document: default
 ---
+title: "Cash for carbon: A randomized trial of payments for ecosystem services to reduce deforestation"
+author: "Anis Toussirt - Lia Corazza"
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+      number_sections: yes
+    theme: readable
+    df_print: paged
+    code_folding: hide
+  html_notebook:
+    toc: yes
+---
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -39,11 +39,6 @@ The objective of our approach will be to replicate this experiment with the help
 We load the packages : 
 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
-install.packages("kableExtra")
-install.packages("cowplot")
-```
-
-```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 # loading packages
 library(tidyverse) # manipulating and viewing data
 library(haven) # loading data in stata format
@@ -52,6 +47,7 @@ library(kableExtra) # to make aesthetic tables
 library(AER)
 library(dplyr)
 library(cowplot)
+library(gtsummary)
 ```
 
 We load the data from the experiment: 
@@ -88,6 +84,15 @@ In our study, we will use the following variables:
 - perc_forest : gives the percentage of PFO land circle with tree cover
 - base_fcover_vil : gives the tree cover of the villages
 - perc_forest_vil: gives the percentage of village with tree cover
+- Fperc_paid : proportion of eligible amount paid
+- Pay_cons : amount paid for avoided deforestation
+- Conserved : PFO is enrolled and deemed to have conserve forest 
+- num_PFOs_vil : number of PFOs in baseline sample
+- inc_pc_vil : average weekly earnings per capita
+- dist_road_vil : distance to the nearest main road
+- l1_area_vil : average size of the reported land nearest the dwelling
+- photo1991_vil : photosynthetic vegetation (ha) in village in 1991 
+- photo2011_vil : photosynthetic vegetation (ha) in village in 2011 
 
 Concerning the outcomes, we are interested in the following one : change_fcover_vil which shows the change in the forest area in the village between the beginning and the end of the programme. 
 
@@ -113,11 +118,11 @@ library(dplyr, quietly = TRUE)
                 
 ```
 
-# IV. Explanation of the treatment allocation process
+IV. Explanation of the treatment allocation process
 
 The study was conducted in 121 villages with private forest owners (PFOs).  60 of these villages were randomly selected to be part of the treatment group. In the villages allocated to the treatment group, the PES programme was marketed to PFOs, who could enrol if they wished. Only 32% of the PFOs in the treatment group villages agreed to participate in the programme. Indeed, 180 PFOs enrolled out of the 564 who were in villages allocated to the treatment group
 
-# V. Highlighting the "balance" of the treatment
+V. Highlighting the "balance" of the treatment
 
 We try to see if the control and treatment groups are similar 
 
@@ -136,12 +141,11 @@ There are more PFOs in the treatment group and the difference is quite large (29
 
 ## Table : summary statistics for each group
 
-To observe the characteristics of the treatment and control groups, one can reproduce "Table 1 : Summary statistics for treatment and control groups" from the researchers' paper : 
+To observe the characteristics of the treatment and control groups, one can reproduce "Table 1 : Summary statistics for treatment and control groups" from the researchers' paper. 
 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 # création de table
 summary_table <- data %>%
-  mutate(treat = ifelse(treat == 1, "Treated", "Control")) %>%
   select(
     treat,
     hhead_age,
@@ -188,34 +192,30 @@ ageplot <- ggplot(data = data) + # boxplot showing the age distribution accordin
   xlab('treat') +
   labs(title = 'Age boxplot') +
   theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
-ageplot
 #Boxplot for years of education
 educationplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
   geom_boxplot(aes(x = as.character(treat), y = hhead_educ , color = as.character(treat))) +
   xlab('treat') +
   labs(title = 'Years of Education boxplot') +
   theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
-educationplot
 #Boxplot for Forest area
 forestareaplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
   geom_boxplot(aes(x = as.character(treat), y = forest_area , color = as.character(treat))) +
   xlab('treat') +
   labs(title = 'Forest area boxplot') +
   theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
-forestareaplot
 #Boxplot for Base Tree cover in village
 basetreecoverplot <- ggplot(data = data) + # boxplot showing the age distribution according to the treatement
   geom_boxplot(aes(x = as.character(treat), y = base_fcover_vil , color = as.character(treat))) +
   xlab('treat') +
   labs(title = 'Base Tree cover in village boxplot') +
   theme(plot.title = element_text(hjust = 0.5)) #putting the title in the middle
-basetreecoverplot
 
 plot_grid(ageplot, educationplot, forestareaplot, basetreecoverplot) #put the graphics side by side 
 ```
 With the boxes, we can see that the two groups are quite similar. Indeed, the medians and quartiles are similar for the age, the years of education. For the area of basic forest in the villages, the outliers for the control group are clearly visible, pulling the group average upwards.  
 
-## Distribution 
+## Distribution
 
 ```{r, echo = TRUE, warning = FALSE}
 
@@ -223,12 +223,10 @@ educationdistribution <- ggplot(data = data) + # plot showing the age distributi
   geom_density(aes(x = hhead_educ, color = treat)) +
   labs(title = 'Years of Education distribution') +
   theme(plot.title = element_text(hjust = 0.5))
-educationdistribution
 agedistribution <- ggplot(data = data) + # plot showing the age distribution according to the treatement
   geom_density(aes(x = hhead_age, color = treat)) +
   labs(title = 'Age distribution') +
   theme(plot.title = element_text(hjust = 0.5))
-agedistribution
 
 plot_grid(educationdistribution, agedistribution) 
 ```
@@ -242,7 +240,7 @@ To test this sharp null hypothesis, we take as a test statistic the difference i
 
 ```{r, echo = TRUE, warning = FALSE}
 #calculation of the difference and recording in the object "observed_difference"
-observed_difference <- mean(data$change_fcover_vil[data$treat == 0], na.rm = TRUE) - mean(data$change_fcover_vil[data$treat == 1], na.rm = TRUE)
+observed_difference <- mean(data$change_fcover_vil[data$treat == 'Control'], na.rm = TRUE) - mean(data$change_fcover_vil[data$treat == 'Treatment'], na.rm = TRUE)
 observed_difference
 ```
 The observed difference is negative. Thus the change in forest area is greater for the treatment group than for the control group on average. 
@@ -257,7 +255,7 @@ for (i in 1:1000){
 data <- data %>%
   mutate(new_treat = sample(treat, replace = FALSE))
 # we store the result
-simulated_difference[i] <- mean(data$change_fcover_vil[data$new_treat== 0], na.rm = TRUE)-mean(data$change_fcover_vil[data$new_treat== 1], na.rm = TRUE)
+simulated_difference[i] <- mean(data$change_fcover_vil[data$new_treat== 'Control'], na.rm = TRUE)-mean(data$change_fcover_vil[data$new_treat== 'Treatment'], na.rm = TRUE)
 }
 ```
 
@@ -275,6 +273,7 @@ graphe <- ggplot(data_simulations, aes(x = simulated_difference)) +
   theme_minimal()
 
 print(graphe)
+graphe
 ```
 The sharp null hypothesis can be rejected visually. Indeed, the observed effect is far from the test statistic result under the null hypothesis.
 
@@ -294,9 +293,9 @@ Let's calculate the 95% confidence interval using the Neyman formula.
 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 #calculation of the first term
-first_term <- var(data$change_fcover_vil[data$treat== 0], na.rm = TRUE)
+first_term <- var(data$change_fcover_vil[data$treat== 'Control'], na.rm = TRUE)
 #calculation of the second term
-second_term <- var(data$change_fcover_vil[data$treat== 1], na.rm = TRUE)
+second_term <- var(data$change_fcover_vil[data$treat== 'Treatment'], na.rm = TRUE)
 #calculation of the standard error
 se <- sqrt(first_term + second_term)
 #calculation of the 95% confidence interval
@@ -311,7 +310,7 @@ We are 95% confident that the effect of the programme would be between these two
 
 # VIII. Linear regression approach
 
-##Calculation of ITTd
+## Calculation of ITTd
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
 lm(Ftakeup ~ treat, data = data)  
 ```
@@ -322,7 +321,7 @@ So ITTd = 0.3098. The effect of village allocation to treatment on programme par
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
 lm(change_fcover_vil ~ treat, data = data)
 ```
-ITT = 5.156. The effect of allocating villages to the treatment group (regardless of whether PFOs participate in the programme or not) is around 5.16. Allocation to treatment increased the area of forest in the village by 5 hectares.
+Si ITT = 5.156. The effect of allocating villages to the treatment group (regardless of whether PFOs participate in the programme or not) is around 5.16. Allocation to treatment increased the area of forest in the village by 5 percentage points.
 
 ## Calculation of CACE 
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
@@ -357,7 +356,6 @@ lm(Ftakeup ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, da
   kable_styling(bootstrap_options = c("striped", "hover"))
 
 ```
-
 Here we find approximately the ITTd already calculated. 
 
 ### Second column 
@@ -388,6 +386,8 @@ lm(pay_cons ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil, d
   kable(., align = c("l", "c", "c", "c", "c")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
+The treatment allowance necessarily has an effect on the income paid by the programme for PFOs to preserve their forest because if villages are allocated to treatment, PFOs will join the programme and receive money. 
+
 ### 4th column 
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 # Fperc_paid (proportion of eligible amount paid) is regressed on the treatment allocation taking into account the control variables
@@ -401,6 +401,7 @@ lm(Fperc_paid ~ treat + num_PFOs_vil + inc_pc_vil + dist_road_vil + l1_area_vil,
   kable(., align = c("l", "c", "c", "c", "c")) %>%
   kable_styling(bootstrap_options = c("striped", "hover"))
 ```
+
 ## Reproduction of table 3 
 
 We will now reproduce the first two columns of "table 3 : Effect of the PES program on tree cover". We include the same covariates as in Table 2. 
@@ -427,6 +428,8 @@ Here we have approximately the ITT already calculated.The control variables adde
 
 ### Second column 
 
+Here this is the same regression but with two new control variables : photo1991_vil and photo2011_vil. 
+
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
 data %>%
   select(village, treat, change_fcover_vil, num_PFOs_vil,
@@ -444,14 +447,18 @@ data %>%
 ```
 The added control variable lowers the effect of the treatment allowance somewhat. 
 
-# IX. Robustness and heterogeneity analyses
+# IX. Robustness analyses
 
-## Robustness 
 
 Here we will look at whether the outcomes change much if we add control variables 
 
 Let us look at the change in the effect of treatment allocation on outcome when adding control variables to the linear regression. 
-We have seen that the ITT gives 5.156. This is the linear regression of the outcome on the treatment allocation. In column 1 of table 3, we have the same regression with the addition of 4 control variables. This regression gives us an effect of 5.54. 
-So the difference between the two is small (0.38). However, when we add two more variables in column 2 (photo1991_vil  and photo2011_vil) of table 3, we have a quite big difference with the ITT: 0.67. 
+We have seen that the ITT gives 5.156. This is the linear regression of the outcome on the treatment allocation. In column 1 of table 3, we have the same regression with the addition of 4 control variables. This regression gives us an effect of 5.54. So the difference between the two is small (0.38). However, when we add two more variables in column 2 of table 3, we have a quite big difference with the ITT: 0.67. If these variables are not controlled, the outcome changes. So it's not very robust. 
 
 
+# Conclusion 
+
+Cash for Carbon is part of a type of environmental program called PES: Payments for Ecosystem Services. Seema Jayachandran's experiment is not innovative in the sense that similar experiments had already been set up in Mexico and Costa Rica. Nevertheless, Cash for Carbon has the particularity of being a randomized experiment which allows for a more realistic result. The researchers' results were quite encouraging in that the experiment showed a decrease in tree cover that was twice as great in the untreated PFOs. After replicating the experiment and testing the sharp null hypothesis, we know that the experiment does have a real impact on deforestation. Moreover, our results are consistent with those of the researchers: the treatment did increase the forest area by about 5 hectares per village, and when we test the robustness of the experiment, we notice that the addition of new variables only slightly modifies the results.
+Nevertheless, the confidence interval measured by Neyman's approach shows us that the interval in which the result lies at 95% has a negative bound. The data suggests that this experiment could have resulted in even higher deforestation among the treated OFPs. 
+One of the reasons why this experiment was successful is that leakage is better treated than in most PFOs. For example, if PFOs commit to conserving their forests, members of the treatment group can make financial agreements with members of the control group to cut twice as many trees in exchange for sharing in the program funding.
+Thus, the Cash for Carbon experiment is a success, insofar as it demonstrates that previous PSE have misjudged the usefulness of a financing program for environmental protection.
