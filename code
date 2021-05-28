@@ -35,7 +35,7 @@ This randomized controlled trial conducted in Uganda, then one of the countries 
 In 2013, at the end of the experiment, the researchers found that the tree cover of the control group had decreased by 9.1%, twice as much as the treatment group. The benefits of the experiment were thus 2.4 times higher than its cost, which made this operation a real success in the fight against global warming.
 The objective of our approach will be to replicate this experiment with the help of the data provided by the researchers and to evaluate the consistency of our results with theirs.
 
-# Loading packages and data
+## Loading packages and data
 
 We load the packages : 
 
@@ -92,7 +92,7 @@ In our study, we will use the following variables:
 
 Concerning the outcomes, we are interested in the following one : change_fcover_vil which shows the change in the forest area in the village between the beginning and the end of the programme. 
 
-As regards treatment, we are dealing with one-sided non-compliance. We have the variable "treat" which gives us which villages were allocated to the treatment. There is also the variable Ftakeup which tells us which PFOs actually attended the programme. 
+As regards treatment, we are dealing with one-sided non-compliance. We have the variable "treat" which gives us which villages were allocated to the treatment. There is also the variable "Ftakeup" which tells us which PFOs actually attended the programme. 
 
 
 # III. Data cleaning 
@@ -104,7 +104,9 @@ data <- data %>%
     treat = case_when(treat == 1 ~ "Treatment",treat == 0 ~ "Control")
     )
 ```
+
 ```{r, eval = TRUE, message = FALSE, warning =  FALSE}
+# we rename some variables that are not very readable 
 library(dplyr, quietly = TRUE)
   data <- data %>% rename(cut_for_cultivating = cut_cult, cut_for_timber = cut_timber, cut_for_emergency = cut_emerg, 
   ihs_tot_revenue = ihs_tim_price_1yr, hurtenv_agree = opi_hurtenv_agr, fcover_change_90_10_vil = fcover_change9111_vil, 
@@ -122,11 +124,11 @@ We try to see if the control and treatment groups are similar
 
 Let's see if the number of PFOs in the control group is close to the number of PFOs in the treatment group
 ```{r, echo = TRUE, warning = FALSE}
-# on prend les données : 
+# we take the data  
 data %>%
-  # et pour chaque groupe (traitement ou contrôle)
+  # and for each group (treatment or control)
   group_by(treat) %>%
-# on compte le nombre de participants qui correspond à la nouvelle variable nombre_obs :
+# we count the number of participants which corresponds to the new variable number_obs 
 summarise(nombre_obs = n())
 ```
 There are more PFOs in the treatment group and the difference is quite large (29). Indeed, although there are almost the same number of villages in each group, there are not the same number of PFOs in each village. This difference is therefore quite normal.
@@ -164,7 +166,6 @@ summary_table <- data %>%
   group_by(treat, covariate) %>%
   summarise(mean = round(mean(value, na.rm = TRUE), 2)) %>%
   pivot_wider(names_from = treat, values_from = mean)
-
 # affichage de la table
 summary_table %>%
   rename(Covariate = covariate) %>%
@@ -305,8 +306,7 @@ We are 95% confident that the effect of the programme would be between these two
 
 ##Calculation of ITTd
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
-lm(Ftakeup ~ treat, data = data)
-   
+lm(Ftakeup ~ treat, data = data)  
 ```
 So ITTd = 0.3098. The effect of village allocation to treatment on programme participation is around 0,31. This means that there are about 31% of compliers (those in villages allocated to the treatment group who participate in the programme).
 
@@ -444,6 +444,7 @@ The added control variable lowers the effect of the treatment allowance somewhat
 Here we will look at whether the outcomes change much if we add control variables 
 
 Let us look at the change in the effect of treatment allocation on outcome when adding control variables to the linear regression. 
-We have seen that the ITT gives 5.156. This is the linear regression of the outcome on the treatment allocation. In column 1 of table 3, we have the same regression with the addition of 4 control variables. This regression gives us an effect of 5.54. So the difference between the two is small (0.38). However, when we add two more variables in column 2 of table 3, we have a quite big difference with the ITT: 0.67. 
+We have seen that the ITT gives 5.156. This is the linear regression of the outcome on the treatment allocation. In column 1 of table 3, we have the same regression with the addition of 4 control variables. This regression gives us an effect of 5.54. 
+So the difference between the two is small (0.38). However, when we add two more variables in column 2 (photo1991_vil  and photo2011_vil) of table 3, we have a quite big difference with the ITT: 0.67. 
 
 
